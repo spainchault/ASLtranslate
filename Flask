@@ -1,0 +1,38 @@
+from flask import Flask, Response
+import cv2
+import numpy as np
+
+app = Flask(ASLbot)
+
+# Initialize the camera
+camera = cv2.VideoCapture(0)
+
+# Initialize an empty list to store predicted letters
+word = []
+
+def detect_asl(frame):
+    # ASL detection logic here plox
+   
+    
+
+def gen_frames():
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        else:
+            prediction = detect_asl(frame)
+            word.append(prediction)  # Store the predicted letter
+            current_word = ''.join(word)  # Convert the list to a string
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n' + current_word.encode() + b'\r\n')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
